@@ -1,9 +1,10 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
+import matplotlib.pyplot as plt
 import re
+import altair as alt
 
-@st.cache
+@st.cache_data 
 def create_links_in_cell(cell_data):
     if isinstance(cell_data, str):
         # Find ticket numbers in the cell data and create clickable links
@@ -15,8 +16,8 @@ def create_links_in_cell(cell_data):
 
 def main():
     # Load the data once at the start
-    df1 = pd.read_excel('Dashboard.xlsx', sheet_name='Sheet1')
-    df = pd.read_excel('Dashboard.xlsx', sheet_name='Sheet2')
+    df1 = pd.read_csv('Dashboard.csv')
+    df = pd.read_csv('grouped.csv')
 
     st.set_page_config(page_title='Time in status', layout='wide', initial_sidebar_state='expanded')
 
@@ -33,17 +34,17 @@ def main():
     text1 = "For the best view, please use the light theme for your web browser"
     st.markdown(f"<p style='font-size: 10px;'>{text1}</p>", unsafe_allow_html=True)
 
-    logo1 = Image.open('logo.png')
-    st.image(logo1, use_column_width=True)
+    #logo1 = Image.open('logo.png')
+    #st.image(logo1, use_column_width=True)
 
     st.subheader('Time in status')
 
     # Initialize session state for priority if not already set
     if 'selected_priority' not in st.session_state:
-        st.session_state.selected_priority = df['priority'].unique().tolist()[0]
+        st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
 
     # Priority selection
-    unique_priority = sorted(df['priority'].unique().tolist())
+    unique_priority = sorted(df1['priority'].unique().tolist())
     selected_priority = st.radio(
         'Select Priority *',
         unique_priority,
@@ -56,153 +57,108 @@ def main():
         st.session_state.selected_priority = selected_priority
 
     # Filter data based on the selected priority
-    filtered_df = df[df['priority'] == st.session_state.selected_priority]
-    filtered_df1 = df1[df1['Priority'] == st.session_state.selected_priority]
+    #filtered_df = df[df['priority'] == st.session_state.selected_priority]
+    filtered_df1 = df1[df1['priority'] == st.session_state.selected_priority]
 
     with st.spinner('Loading data...'):
-        custom_css = """
-            <style>
-                #custom-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                #custom-table th, td {
-                    padding: 8px;
-                    text-align: left;
-                    border: 1px solid #000;
-                }
-                #custom-table th {
-                    background-color: #B0E0E6;
-                    color: #000;  /* Dark black font color */
-                    border-bottom: 1px solid #000;
-                }
-                #custom-table td {
-                    background-color: #f9f9f9;
-                    color: #333;
-                    border: 1px solid #ddd;
-                }
-                #custom-table td:nth-child(5) {
-                    color: #3CB371;  /* Dark green font for column 5 */
-                    font-weight: bold;  /* Bold font for column 5 */
-                }
-                #custom-table td:nth-child(6) {
-                    color: red;  /* Red font for column 6 */
-                    font-weight: bold;  /* Bold font for column 6 */
-                }
-                .highlight {
-                    background-color: #ff9999;  /* Darker Light Red */
-                    color: #000;  /* Black font color */
-                }
-            </style>
-        """
+        styled_html = f"""
+<style>
+.mystyle {{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}}
+
+.mystyle th, .mystyle td {{
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: center;
+}}
+
+.mystyle thead th {{
+    background-color: #87CEEB;
+    color: #000;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}}
+
+.mystyle tr:nth-child(even) {{
+    background-color: #f9f9f9;
+}}
+
+.mystyle tr:hover {{
+    background-color: #e6f2ff;
+}}
+
+.scroll-container {{
+    max-height: 600px;
+    overflow: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}}
+</style>
+"""
+
         st.write(f"<b>Details for [{st.session_state.selected_priority}] priority</b>", unsafe_allow_html=True)
-        st.markdown(custom_css, unsafe_allow_html=True)
-
-        # Display Table 1 with SPOC buttons
-        st.write("### Table 1 with SPOC Selection:")
-
-        formatted_df1 = filtered_df1.copy()
-
-        # Define table headers to align content
-        st.markdown(
-            """
-            <style>
-                .row-header {
-                    font-weight: bold;
-                }
-            </style>
-            """, unsafe_allow_html=True
-        )
-        # Table headers for each column
-        st.write(f"<div class='row-header'>View &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Priority &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Component &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Open Time (min) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In Progress Time (min) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Resolved Time (min) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Reopened Count &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Current Status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Assignee</div>", unsafe_allow_html=True)
-
-        for index, row in formatted_df1.iterrows():
-            col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([1, 2, 2, 2, 2, 2, 2, 2, 2])  # Adjust column widths
-
-            with col1:
-                # Add a "View" button for each row
-                if st.button("View", key=f"view_{index}"):
-                    st.session_state.selected_spoc = row['SPOC']
-
-            with col2:
-                st.write(row['Priority'])
-
-            with col3:
-                st.write(row['Component'])
-
-            with col4:
-                st.write(row['Open Time (min)'])
-
-            with col5:
-                st.write(row['In Progress Time (min)'])
-
-            with col6:
-                st.write(row['Resolved Time (min)'])
-
-            with col7:
-                st.write(row['Reopened Count'])
-
-            with col8:
-                st.write(row['Current Status'])
-
-            with col9:
-                st.write(row['Assignee'])
-
-        st.write('')
-        st.write('')
-
-        # Add a filter for tickets based on SPOC
-        if 'selected_spoc' in st.session_state:
-            st.write(f"Selected SPOC: {st.session_state.selected_spoc}")
+        st.markdown(styled_html, unsafe_allow_html=True)
+        col1,col2=st.columns(2)
+        with col1:
+            selected = st.dataframe(
+            df,
+            use_container_width=True,
+            selection_mode="single-row",
+            on_select="rerun"
+            )
             
-            # Filter tickets for the selected SPOC
-            spoc_filtered_df = filtered_df[filtered_df['SPOC'] == st.session_state.selected_spoc]
+        with col2:
+            SPOC_df=df[["SPOC","NEED_ATTENTION"]]
+            bars = alt.Chart(SPOC_df).mark_bar(color='red').encode(
+            x=alt.X('SPOC:N', title='SPOC'),
+            y=alt.Y('NEED_ATTENTION:Q', title='NEED_ATTENTION', stack='zero'),
+            tooltip=['SPOC', 'NEED_ATTENTION']
+            )
 
-            # Display Table 2 (filtered tickets)
-            custom_css1 = """
-            <style>
-                #custom-table2 {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                #custom-table2 th, td {
-                    padding: 8px;
-                    text-align: left;
-                    border: 1px solid #000;
-                }
-                #custom-table2 th {
-                    background-color:#E6E6FA;
-                    color: #000;  /* Dark black font color */
-                    border-bottom: 1px solid #000;
-                }
-                #custom-table2 td {
-                    background-color: #f9f9f9;
-                    color: #333;
-                    border: 1px solid #ddd;
-                }
-                .highlight {
-                    background-color: #ff9999;  /* Darker Light Red */
-                    color: #000;  /* Black font color */
-                }
-            </style>
-            """
-            st.markdown(custom_css1, unsafe_allow_html=True)
+            text_inside = alt.Chart(SPOC_df).mark_text(
+                dy=6,
+                fontSize=12,
+                fontWeight='bold',
+                color='white'
+            ).encode(
+                x='SPOC:N',
+                y=alt.Y('NEED_ATTENTION:Q', stack='zero'),
+                text='NEED_ATTENTION:Q',
+            )
 
-            st.write(f"<b>Tickets where [{st.session_state.selected_spoc}] is SPOC:</b>", unsafe_allow_html=True)
+            chart = bars + text_inside
+            st.altair_chart(chart, use_container_width=True)
 
-            filtered_df_1 = spoc_filtered_df.iloc[:, 0:1]
-            formatted_df_with_links = filtered_df_1.applymap(create_links_in_cell)
-            formatted_df_with_links.insert(1, 'Component', spoc_filtered_df['component'])
-            formatted_df_with_links.insert(2, 'Open Time (in minutes)', spoc_filtered_df['open_time'])
-            formatted_df_with_links.insert(3, 'In Progress Time (in minutes)', spoc_filtered_df['in_progress_time'])
-            formatted_df_with_links.insert(4, 'Resolved Time (in minutes)', spoc_filtered_df['resolved_time'])
-            formatted_df_with_links.insert(5, 'Reopened count', spoc_filtered_df['reopened_count'])
-            formatted_df_with_links.insert(6, 'Current status', spoc_filtered_df['current_status'])
-            formatted_df_with_links.insert(7, 'Assignee', spoc_filtered_df['asignee'])
 
-            formatted_html = formatted_df_with_links.to_html(escape=False, index=False, table_id='custom-table2')
-            st.markdown(formatted_html, unsafe_allow_html=True)
+        selected_value=''
+        if selected.selection.rows:
+            idx = selected.selection.rows[0]
+            selected_value = df.iloc[idx]["SPOC"]
+            st.write("Tickets for SPOC: ", selected_value)
+        #st.dataframe(df,hide_index=True)
+            st.write('')
+
+            formatted_df1 = filtered_df1.copy()
+            formatted_df1=formatted_df1[formatted_df1["SPOC"] == selected_value]
+        #filtered_df = df[df["DOMAIN"] == "Billing"]
+            formatted_df1["ticket_no"]=formatted_df1["ticket_no"].apply(
+           lambda x : f'<a href="https://shripadpote95.atlassian.net/browse/{x}" target="_blank">{x}</a>'
+            )
+      
+            html_table= formatted_df1.to_html(
+            index=False,
+            justify="center",
+            border=0,
+            escape=False,
+            classes="mystyle"
+            )
+            st.markdown(styled_html+f'<div class="scroll-container">{html_table}</div>',unsafe_allow_html=True)
+
 
 if __name__ == '__main__':
     main()
-
