@@ -1,73 +1,182 @@
+
+
 import requests
 from requests.auth import HTTPBasicAuth
-from bs4 import BeautifulSoup
-import csv
+import pandas as pd
+import duckdb
+from datetime import datetime
 
-#  function to scrape a page
-def scrape_page(url):
-    response = requests.get(url, auth=HTTPBasicAuth(username, password))
-    print(url)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        rows = soup.find_all('tr', id=lambda x: x and x.startswith('issuerow'))
-        for row in rows:
-            issue_key_elem = row.find('td', class_='issuekey').find('a', class_='issue-link')
-            issue_key = issue_key_elem['data-issue-key'].strip() if issue_key_elem else "N/A"
+# --------------- CONFIG ---------------
+JIRA_BASE_URL = "https://shripadpote95.atlassian.net"
 
-            assignee_elem = row.find('td', class_='assignee').find('a', class_='user-hover-replaced')
-            assignee = assignee_elem.text.strip() if assignee_elem else "N/A"
+EMAIL = "shripadpote95@gmail.com"
+API_TOKEN = "ATATT3xFfGF0Mn5amQImj2JuXZl52KcilJQWMeuD2noRvKnnhljDMLsVtVCYeKtoyTW4m6hSgiHe19HDt2Un1U7gqVkj34p2HwkFtHzBJXs54pwnhUUs5PDSLuhq6FJAsAhoBK_vcK--IHCIoIto-Av14Qnuz11KiSMVskqKeOi0cnc2HtROO6U=C87D5C11"
 
-            status_elem = row.find('td', class_='status').find('span')
-            status = status_elem.text.strip() if status_elem else "N/A"
 
-            created_date_elem = row.find('td', class_='created').find('time')
-            created_date = created_date_elem.text.strip() if created_date_elem else "N/A"
+auth = HTTPBasicAuth(EMAIL, API_TOKEN)
+url = f"{JIRA_BASE_URL}/rest/api/3/search/jql"
+jql = 'project = dashboard and parent = DEV-4'
+DB_FILE = "jira_sla.duckdb"
 
-            components_elem = row.find('td', class_='components')
-            if components_elem:
-                components = [component.strip() for component in components_elem.text.strip().split(',')]
-            else:
-                components = []
+def fetch_data():
 
-            issue_data = {
-                'Issue Key': issue_key,
-                'Assignee': assignee,
-                'Status': status,
-                'Created Date': created_date
-            }
+    headers = {
+        "Accept": "application/json"
+    }
+    
+    query = {
+        'jql': jql,  # change JQL if needed
+        'maxResults': 100,       # max per request
+        'fields': 'summary,status,assignee,created,labels,priority'  # fetch only required fields
+    }
+    
+    response = requests.get(
+        url,
+        headers=headers,
+        params=query,
+        auth=auth
+    )
+    
+    response.raise_for_status()  # stops if API call fails
+    data = response.json()
+    
+    print(f"Total issues fetched: {len(data.get('issues', []))}")
+    
+    rows=[]
+    for issue in data.get('issues', []):
+            fields = issue.get('fields', {})
 
-            for i, component in enumerate(components):
-                issue_data[f'Component {i + 1}'] = component
+            assignee = fields['assignee']['displayName'] if fields.get('assignee') else 'Unassigned'
+            labels = fields.get("labels", [])
+            priority = (
+            fields.get("priority", {}).get("name")
+            if fields.get("priority")
+            else "None"
+                )
+            
+            rows.append({
+                'ticket_no': issue['key'],
+                'id': issue['id'],
+                'summary': issue['fields'].get('summary', ''),
+                'status': issue['fields'].get('status', {}).get('name', ''),
+                'assignee': assignee,
+                'created': issue['fields'].get('created', ''),
+                'label' : ",".join(labels) if labels else "",
+                'priority': priority
 
-            data.append(issue_data)
-        
-    else:
-        print(f"Failed to retrieve data from {url}. Status code: {response.status_code}")
+            })
+    return pd.DataFrame(rows)
 
-# Initialize variables
-data = []
-count = 0
+def init_db(con):
+    con.execute("""
+    CREATE TABLE IF NOT EXISTS TICKET_STATUS_TIME (
+        ticket_no VARCHAR PRIMARY KEY,
+        priority VARCHAR,
+        label VARCHAR,
+        open_time INTEGER DEFAULT 0,
+        in_progress_time INTEGER DEFAULT 0,
+        resolved_time INTEGER DEFAULT 0,
+        reopened_count INTEGER DEFAULT 0,
+        current_status VARCHAR,
+        assignee VARCHAR,
+        last_updated TIMESTAMP
+    )
+    """)
 
-response = requests.get(jira_url, auth=HTTPBasicAuth(username, password))
-soup = BeautifulSoup(response.text, 'html.parser')
+def merge_data(con, df):
+    con.register("df_tmp", df)
 
-total_count = soup.find('span', class_='results-count-total results-count-link').text.strip()
-print(total_count)
+    con.execute("""
+    CREATE OR REPLACE TEMP TABLE TEMP_TICKET_STATUS_TIME AS
+    SELECT
+        ticket_no,
+        LOWER(REPLACE(status, ' ', '_')) AS status,
+        priority,
+        label,
+        assignee
+    FROM df_tmp
+    """)
 
-while count < int(total_count):
-    url = jira_url + "&startIndex=" + str(count)
-    scrape_page(url)
-    count += 50
+    con.execute("""
+    MERGE INTO TICKET_STATUS_TIME mst
+    USING TEMP_TICKET_STATUS_TIME tmp
+    ON mst.ticket_no = tmp.ticket_no
 
-# Determine the maximum number of components to define the headers
-max_components = max(len([key for key in item.keys() if key.startswith('Component')]) for item in data) if data else 0
-headers = ['Issue Key', 'Assignee', 'Status', 'Created Date'] + [f'Component {i + 1}' for i in range(max_components)]
+    WHEN MATCHED THEN
+    UPDATE SET
+        open_time = mst.open_time
+            + CASE WHEN tmp.status = 'to_do' THEN 15 ELSE 0 END,
 
-# Write to CSV
-with open('jira_issues.csv', mode='w', newline='') as file:
-    writer = csv.DictWriter(file, fieldnames=headers)
-    writer.writeheader()
-    writer.writerows(data)
+        in_progress_time = mst.in_progress_time
+            + CASE WHEN tmp.status = 'in_progress' THEN 15 ELSE 0 END,
 
-print("Data has been written to jira_issues.csv")
+        resolved_time = mst.resolved_time
+            + CASE WHEN tmp.status = 'resolved' THEN 15 ELSE 0 END,
 
+        reopened_count = mst.reopened_count
+            + CASE
+                WHEN tmp.status = 'reopened'
+                 AND mst.current_status <> 'reopened'
+                THEN 1 ELSE 0
+              END,
+
+        current_status = tmp.status,
+        priority = tmp.priority,
+        label = tmp.label,
+        assignee = tmp.assignee,
+        last_updated = CURRENT_TIMESTAMP
+
+    WHEN NOT MATCHED THEN
+    INSERT (
+        ticket_no,
+        priority,
+        label,
+        open_time,
+        in_progress_time,
+        resolved_time,
+        reopened_count,
+        current_status,
+        assignee,
+        last_updated
+    )
+    VALUES (
+        tmp.ticket_no,
+        tmp.priority,
+        tmp.label,
+        CASE WHEN tmp.status = 'open' THEN 15 ELSE 0 END,
+        CASE WHEN tmp.status = 'in_progress' THEN 15 ELSE 0 END,
+        CASE WHEN tmp.status = 'resolved' THEN 15 ELSE 0 END,
+        0,
+        tmp.status,
+        tmp.assignee,
+        CURRENT_TIMESTAMP
+    )
+    """)
+
+def main():
+    con = duckdb.connect(DB_FILE)
+    try:
+        con.execute("BEGIN TRANSACTION")
+
+        init_db(con)
+
+        df = fetch_data()
+        merge_data(con, df)
+
+        con.execute("COMMIT")
+        print("Merge successful at", datetime.now())
+        df = con.execute("""
+        SELECT * FROM TICKET_STATUS_TIME
+        """).df()
+        print(df)
+        df.to_csv("dashboard.csv", index=False)
+
+    except Exception as e:
+        con.execute("ROLLBACK")
+        print("Error:", e)
+
+    finally:
+        con.close()
+
+if __name__ == '__main__':
+    main()
