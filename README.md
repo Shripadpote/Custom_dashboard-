@@ -5,3 +5,7 @@ Requirements :
 pip install oracledb 
 pip install bs4
 pip install streamlit
+
+
+
+<img width="1886" height="881" alt="image" src="https://github.com/user-attachments/assets/cc599dc5-66e4-4ad9-a7a4-5abe8cc9211e" />
