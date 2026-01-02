@@ -8,7 +8,7 @@ from datetime import datetime
 
 # --------------- CONFIG ---------------
 JIRA_BASE_URL = "https://shripadpote95.atlassian.net"
-
+# Sample cred
 EMAIL = "shripadpote95@gmail.com"
 API_TOKEN = "ATATT3xFfGF0Mn5amQImj2JuXZl52KcilJQWMeuD2noRvKnnhljDMLsVtVCYeKtoyTW4m6hSgiHe19HDt2Un1U7gqVkj34p2HwkFtHzBJXs54pwnhUUs5PDSLuhq6FJAsAhoBK_vcK--IHCIoIto-Av14Qnuz11KiSMVskqKeOi0cnc2HtROO6U=C87D5C11"
 
