@@ -1,0 +1,4 @@
+status,allowed_time
+open,30	
+in_analysis,600
+ready_for_testing,300
