@@ -1,0 +1,5 @@
+ticket_no,module,priority,label,open_time,in_analysis_time,ready_for_testing_time,reopened_count,current_status,assignee,last_updated,SPOC,verdict
+QA-8,Module2,Medium,Dev,165,0,0,0,open,Unassigned,2026-01-16 00:06:05.115380,John,Needs attention
+QA-6,Module2,Medium,Dev,165,0,0,0,open,Unassigned,2026-01-16 00:06:05.115380,John,Needs attention
+QA-7,Module1,Medium,QA,120,15,30,0,ready_for_testing,Unassigned,2026-01-16 00:06:05.115380,Andrew,Within limit
+QA-5,Module1,Medium,Dev,165,0,0,0,open,Unassigned,2026-01-16 00:06:05.115380,Shripad,Needs attention
