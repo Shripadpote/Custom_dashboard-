@@ -15,7 +15,7 @@ def create_links_in_cell(cell_data):
 
 def main():
     # Load the data once at the start
-    df1 = pd.read_csv('Dashboard.csv')
+    df1 = pd.read_csv('dashboard.csv')
     df = pd.read_csv('grouped.csv')
 
     st.set_page_config(page_title='Time in status', layout='wide', initial_sidebar_state='expanded')
