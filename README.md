@@ -5,6 +5,5 @@ Requirements :
 duckdb
 streamlit
 
+<img width="1829" height="795" alt="image" src="https://github.com/user-attachments/assets/beb79f7f-16c9-4e95-ab6b-daa1788261c1" />
 
-
-<img width="1886" height="881" alt="image" src="https://github.com/user-attachments/assets/cc599dc5-66e4-4ad9-a7a4-5abe8cc9211e" />
