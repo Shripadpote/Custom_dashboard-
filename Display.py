@@ -104,7 +104,7 @@ def main():
         st.markdown(styled_html, unsafe_allow_html=True)
         col1,col2=st.columns(2)
         with col1:
-            st.write("Select any SPOC to check tickets which needs attention" )
+            st.write("Select a SPOC to check tickets which needs attention" )
 
             selected = st.dataframe(
             df,
