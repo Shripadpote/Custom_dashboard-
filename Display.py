@@ -108,6 +108,7 @@ def main():
             df=df.iloc[:,1:]
             selected = st.dataframe(
             df,
+            hide_index=True,
             use_container_width=True,
             selection_mode="single-row",
             on_select="rerun"
