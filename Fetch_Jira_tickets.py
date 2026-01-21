@@ -3,7 +3,7 @@ from requests.auth import HTTPBasicAuth
 import pandas as pd
 import duckdb
 from datetime import datetime
-import OS
+import os
 
 # --------------- CONFIG ---------------
 JIRA_BASE_URL = "https://shripadpote95.atlassian.net"
