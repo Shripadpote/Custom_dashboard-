@@ -7,12 +7,13 @@ from datetime import datetime
 # --------------- CONFIG ---------------
 JIRA_BASE_URL = "https://shripadpote95.atlassian.net"
 #---Sample credentials
-EMAIL = "shripad****@gmail.com"
-API_TOKEN=""
+EMAIL = os.environ.get("EMAIL")
+API_TOKEN=os.environ.get("API")
 auth = HTTPBasicAuth(EMAIL, API_TOKEN)
 url = f"{JIRA_BASE_URL}/rest/api/3/search/jql"
 jql = 'project = dashboard and parent = DEV-4'
 DB_FILE = "jira_sla.duckdb"
+
 
 def fetch_data():
 
