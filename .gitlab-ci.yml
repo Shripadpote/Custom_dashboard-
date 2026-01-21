@@ -1,0 +1,33 @@
+image: python:3.10-slim
+
+stages:
+  - run
+
+run_python_loop:
+  stage: run
+  when: manual   # or remove this to run on push
+  script:
+    - |
+      while true; do
+        DAY=$(date +%u)   # 1=Mon ... 7=Sun
+        HOUR=$(date +%H)
+
+        # Exit on weekend
+        if [ "$DAY" -gt 5 ]; then
+          exit 0
+        fi
+
+        # Exit after 18:00
+        if [ "$HOUR" -gt 18 ]; then
+          exit 0
+        fi
+
+        # Skip before 09:00
+        if [ "$HOUR" -lt 9 ]; then
+          sleep 300
+          continue
+        fi
+
+        python Fetch_Jira_tickets.py
+        sleep 900   # 15 minutes
+      done
