@@ -1,7 +1,7 @@
 ticket_no,module,priority,label,open_time,in_analysis_time,ready_for_testing_time,reopened_count,current_status,assignee,last_updated,SPOC,verdict
-QA-8,Module2,High,Dev,165,0,0,0,open,Unassigned,2026-01-22 00:31:09.193646,John,Needs attention
-QA-6,Module2,High,Dev,165,0,0,0,open,Unassigned,2026-01-22 00:31:09.193646,John,Needs attention
-QA-7,Module1,High,QA,0,0,165,0,ready_for_testing,Unassigned,2026-01-22 00:31:09.193646,Andrew,Within limit
-QA-5,Module1,High,Dev,165,0,0,0,open,Unassigned,2026-01-22 00:31:09.193646,Shripad,Needs attention
-QA-9,Module2,High,QA,150,0,0,0,open,Unassigned,2026-01-22 00:31:09.193646,Dima,Needs attention
-QA-10,Module1,Medium,QA,30,0,0,0,open,Unassigned,2026-01-22 00:31:09.193646,Andrew,Within limit
+QA-8,Module2,High,Dev,180,0,0,0,open,Unassigned,2026-01-22 00:33:08.180676,John,Needs attention
+QA-6,Module2,High,Dev,180,0,0,0,open,Unassigned,2026-01-22 00:33:08.180676,John,Needs attention
+QA-7,Module1,High,QA,0,0,180,0,ready_for_testing,Unassigned,2026-01-22 00:33:08.180676,Andrew,Within limit
+QA-5,Module1,High,Dev,180,0,0,0,open,Unassigned,2026-01-22 00:33:08.180676,Shripad,Needs attention
+QA-9,Module2,High,QA,165,0,0,0,open,Unassigned,2026-01-22 00:33:08.180676,Dima,Needs attention
+QA-10,Module1,Medium,QA,45,0,0,0,open,Unassigned,2026-01-22 00:33:08.180676,Andrew,Needs attention
