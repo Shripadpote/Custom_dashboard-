@@ -145,7 +145,7 @@ def main():
             st.write('')
             
             formatted_df1 = filtered_df1.copy()
-            formatted_df1=formatted_df1[formatted_df1["SPOC"] == c]
+            formatted_df1=formatted_df1[formatted_df1["SPOC"] == selected_value]
             formatted_df1=formatted_df1[formatted_df1["verdict"] == 'Needs attention']
     
         #filtered_df = df[df["DOMAIN"] == "Billing"]
