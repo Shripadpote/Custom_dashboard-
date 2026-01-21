@@ -58,7 +58,7 @@ def main():
     # Filter data based on the selected priority
     #filtered_df = df[df['priority'] == st.session_state.selected_priority]
     filtered_df1 = df1[df1['priority'] == st.session_state.selected_priority]
-
+    df= df[df['priority'] == st.session_state.selected_priority]
     with st.spinner('Loading data...'):
         styled_html = f"""
 <style>
