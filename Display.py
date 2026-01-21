@@ -105,7 +105,7 @@ def main():
         col1,col2=st.columns(2)
         with col1:
             st.write("Select a SPOC to check tickets which needs attention" )
-
+            df=df.iloc[2,:]
             selected = st.dataframe(
             df,
             use_container_width=True,
