@@ -61,11 +61,11 @@ def main():
     FROM (
         SELECT
             a.priority,s.spoc, a.module, a.label,
-            CASE
-                WHEN a.current_status='OPEN' AND a.open_time > l.allowed_time THEN 'Needs attention'
-                WHEN a.current_status='IN_ANALYSIS' AND a.in_analysis_time > l.allowed_time THEN 'Needs attention'
-                WHEN a.current_status='READY_FOR_TESTING' AND a.ready_for_testing_time > l.allowed_time THEN 'Needs attention'
-                ELSE 'Within limit'
+             CASE
+            WHEN upper(a.current_status)='OPEN' AND a.open_time > l.allowed_time THEN 'Needs attention'
+            WHEN upper(a.current_status)='IN_ANALYSIS' AND a.in_analysis_time > l.allowed_time THEN 'Needs attention'
+            WHEN upper(a.current_status)='READY_FOR_TESTING' AND a.ready_for_testing_time > l.allowed_time THEN 'Needs attention'
+            ELSE 'Within limit'
             END AS verdict
         FROM TICKET_STATUS_TIME a
         JOIN SLA l ON upper(a.current_status) = upper(l.status)
