@@ -9,7 +9,7 @@ def get_conn():
 
         connection = pymysql.connect(
         host=os.environ.get("host"),           # or "localhost"
-        port=os.environ.get("port"),
+        port=int(os.environ.get("port")),
         user=os.environ.get("user"),
         password=os.environ.get("password"),
         database="test",   # optional – can connect without DB first
