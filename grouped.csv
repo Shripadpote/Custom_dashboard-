@@ -1,6 +1,0 @@
-priority,SPOC,module,label,NEED_ATTENTION,Within_limit
-High,Andrew,Module1,QA,0.0,1.0
-High,Dima,Module2,QA,1.0,0.0
-High,Shripad,Module1,Dev,1.0,0.0
-High,John,Module2,Dev,2.0,0.0
-Medium,Andrew,Module1,QA,1.0,0.0
