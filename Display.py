@@ -12,7 +12,7 @@ def get_conn():
         port=int(os.environ.get("port")),
         user=os.environ.get("user"),
         password=os.environ.get("password"),
-        database="test",   # optional – can connect without DB first
+        database=os.environ.get("database"),   # optional – can connect without DB first
         connect_timeout=10,
        
     )
