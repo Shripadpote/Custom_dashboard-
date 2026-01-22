@@ -2,6 +2,34 @@ import streamlit as st
 import pandas as pd
 import re
 import altair as alt
+import mysql.connector
+from mysql.connector import Error
+import os
+
+def get_conn():
+    try:
+        connection = mysql.connector.connect(
+        host=os.environ.get("host"),           # or "localhost"
+        port=os.environ.get("port"),
+        user=os.environ.get("user"),
+        password=os.environ.get("password"),
+        database="test",   # optional – can connect without DB first
+        connect_timeout=10,
+       
+    )
+
+        if connection.is_connected():
+            print("Successfully connected to MySQL")
+            print("MySQL Server version:", connection.get_server_info())
+            cursor = connection.cursor()
+            cursor.execute("SELECT VERSION()")
+            print("Database version:", cursor.fetchone()[0])
+            return connection
+
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+
+    
 
 @st.cache_data 
 def create_links_in_cell(cell_data):
@@ -14,9 +42,50 @@ def create_links_in_cell(cell_data):
         return '-'
 
 def main():
+    con = get_conn()
+    df1 = pd.read_sql("""
+    SELECT
+        a.*,
+        s.spoc  as SPOC,
+        CASE
+            WHEN a.current_status='OPEN' AND a.open_time > l.allowed_time THEN 'Needs attention'
+            WHEN a.current_status='IN_ANALYSIS' AND a.in_analysis_time > l.allowed_time THEN 'Needs attention'
+            WHEN a.current_status='READY_FOR_TESTING' AND a.ready_for_testing_time > l.allowed_time THEN 'Needs attention'
+            ELSE 'Within limit'
+        END AS verdict
+    FROM TICKET_STATUS_TIME a
+    JOIN SLA l ON upper(a.current_status) = upper(l.status)
+    JOIN SPOC s ON a.module = s.module AND a.label = s.label
+    """, con)
+
+
+
+    df = pd.read_sql(""" 
+    SELECT
+        priority,spoc as SPOC, module, label,
+        SUM(CASE WHEN verdict='Needs attention' THEN 1 ELSE 0 END) AS NEED_ATTENTION,
+        SUM(CASE WHEN verdict='Within limit' THEN 1 ELSE 0 END) AS Within_limit
+    FROM (
+        SELECT
+            a.priority,s.spoc, a.module, a.label,
+            CASE
+                WHEN a.current_status='OPEN' AND a.open_time > l.allowed_time THEN 'Needs attention'
+                WHEN a.current_status='IN_ANALYSIS' AND a.in_analysis_time > l.allowed_time THEN 'Needs attention'
+                WHEN a.current_status='READY_FOR_TESTING' AND a.ready_for_testing_time > l.allowed_time THEN 'Needs attention'
+                ELSE 'Within limit'
+            END AS verdict
+        FROM TICKET_STATUS_TIME a
+        JOIN SLA l ON upper(a.current_status) = upper(l.status)
+        JOIN SPOC s ON a.module = s.module AND a.label = s.label
+    ) t
+    GROUP BY priority, spoc, module, label
+    """, con)
+
+
+
     # Load the data once at the start
-    df1 = pd.read_csv('dashboard.csv')
-    df = pd.read_csv('grouped.csv')
+   # df1 = pd.read_csv('dashboard.csv')
+    #df = pd.read_csv('grouped.csv')
 
     st.set_page_config(page_title='Time in status', layout='wide', initial_sidebar_state='expanded')
 

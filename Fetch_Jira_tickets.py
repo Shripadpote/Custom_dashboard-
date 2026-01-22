@@ -1,21 +1,44 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import pandas as pd
-import duckdb
 from datetime import datetime
+import mysql.connector
+from mysql.connector import Error
 import os
 
-# --------------- CONFIG ---------------
+
 JIRA_BASE_URL = "https://shripadpote95.atlassian.net"
-#---Sample credentials
 EMAIL = os.environ.get("EMAIL")
 API_TOKEN=os.environ.get("API")
 auth = HTTPBasicAuth(EMAIL, API_TOKEN)
 url = f"{JIRA_BASE_URL}/rest/api/3/search/jql"
 jql = 'project = dashboard and parent = DEV-4'
-DB_FILE = "jira_sla.duckdb"
 
 
+def get_conn():
+    try:
+        connection = mysql.connector.connect(
+        host=os.environ.get("host"),           # or "localhost"
+        port=os.environ.get("port"),
+        user=os.environ.get("user"),
+        password=os.environ.get("password"),
+        database="test",   # optional – can connect without DB first
+        connect_timeout=10,
+       
+    )
+
+        if connection.is_connected():
+            print("Successfully connected to MySQL")
+         
+            cursor = connection.cursor()
+            cursor.execute("SELECT VERSION()")
+
+            return connection
+
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+
+    
 def fetch_data():
 
     headers = {
@@ -66,165 +89,149 @@ def fetch_data():
             })
     return pd.DataFrame(rows)
 
-def init_db(con):
-    con.execute("""
+# ==============================
+# INIT MAIN TABLE
+# ==============================
+
+def init_db(cur):
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS TICKET_STATUS_TIME (
-        ticket_no VARCHAR PRIMARY KEY,
-        module VARCHAR,
-        priority VARCHAR,
-        label VARCHAR,
-        open_time INTEGER DEFAULT 0,
-        in_analysis_time INTEGER DEFAULT 0,
-        ready_for_testing_time INTEGER DEFAULT 0,
-        reopened_count INTEGER DEFAULT 0,
-        current_status VARCHAR,
-        assignee VARCHAR,
+        ticket_no VARCHAR(50) PRIMARY KEY,
+        module VARCHAR(255),
+        priority VARCHAR(50),
+        label VARCHAR(255),
+        open_time INT DEFAULT 0,
+        in_analysis_time INT DEFAULT 0,
+        ready_for_testing_time INT DEFAULT 0,
+        reopened_count INT DEFAULT 0,
+        current_status VARCHAR(50),
+        assignee VARCHAR(255),
         last_updated TIMESTAMP
     )
     """)
-    
-def merge_data(con, df):
-    con.register("df_tmp", df)
-
-    con.execute("""
-    CREATE OR REPLACE TEMP TABLE TEMP_TICKET_STATUS_TIME AS
-    SELECT
-        ticket_no,
-        module,
-        LOWER(REPLACE(status, ' ', '_')) AS status,
-        priority,
-        label,
-        assignee
-    FROM df_tmp
-    """)
-
-    con.execute("""
-    MERGE INTO TICKET_STATUS_TIME mst
-    USING TEMP_TICKET_STATUS_TIME tmp
-    ON mst.ticket_no = tmp.ticket_no
-
-    WHEN MATCHED THEN
-    UPDATE SET
-        open_time = mst.open_time
-            + CASE WHEN upper(tmp.status) = 'OPEN' THEN 15 ELSE 0 END,
-
-        in_analysis_time = mst.in_analysis_time
-            + CASE WHEN upper(tmp.status) = 'IN_ANALYSIS' THEN 15 ELSE 0 END,
-
-        ready_for_testing_time = mst.ready_for_testing_time
-            + CASE WHEN upper(tmp.status) = 'READY_FOR_TESTING' THEN 15 ELSE 0 END,
-
-        reopened_count = mst.reopened_count
-            + CASE
-                WHEN tmp.status = 'Reopened'
-                 AND mst.current_status <> 'Reopened'
-                THEN 1 ELSE 0
-              END,
-
-        current_status = tmp.status,
-        priority = tmp.priority,
-        label = tmp.label,
-        assignee = tmp.assignee,
-        last_updated = CURRENT_TIMESTAMP
-
-    WHEN NOT MATCHED THEN
-    INSERT (
-        ticket_no,
-        module,
-        priority,
-        label,
-        open_time,
-        in_analysis_time,
-        ready_for_testing_time,
-        reopened_count,
-        current_status,
-        assignee,
-        last_updated
-    )
-    VALUES (
-        tmp.ticket_no,
-        tmp.module,
-        tmp.priority,
-        tmp.label,
-        CASE WHEN tmp.status = 'Open' THEN 15 ELSE 0 END,
-        CASE WHEN tmp.status = 'In Analysis' THEN 15 ELSE 0 END,
-        CASE WHEN tmp.status = 'Ready for Testing' THEN 15 ELSE 0 END,
-        0,
-        tmp.status,
-        tmp.assignee,
-        CURRENT_TIMESTAMP
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS TEMP_TICKET_STATUS_TIME (
+        ticket_no VARCHAR(50) PRIMARY KEY,
+        module VARCHAR(255),
+        status VARCHAR(50),
+        assignee VARCHAR(255),
+        created TIMESTAMP,
+        label VARCHAR(255),
+        priority VARCHAR(50),
+        last_updated TIMESTAMP
     )
     """)
-    df_spoc=pd.read_csv("SPOC.csv")
-    df_sla=pd.read_csv("time_limit.csv")
+    cur.execute("TRUNCATE TABLE TEMP_TICKET_STATUS_TIME")
 
-    con.execute("""
-    CREATE OR REPLACE TEMP TABLE SPOC AS
-    SELECT
-       module,label,SPOC
-    FROM df_spoc
-    """)
+def merge_data(conn, df):
+    cur = conn.cursor()
+    data = [
+        tuple(row) for row in df[['ticket_no', 'module', 'status', 'assignee','created', 'label', 'priority']].itertuples(index=False)
+    ]
 
-    con.execute("""
-    CREATE OR REPLACE TEMP TABLE sla AS
-    SELECT
-       status, allowed_time,
-    FROM df_sla
-    """)
-
-    con.execute("""
-    CREATE OR REPLACE TEMP TABLE TEMP_TICKET_STATUS_FINAL AS
-    SELECT
-        a.*,
-        c.spoc,
-        case when upper(a.current_status)='OPEN' and a.open_time > b.allowed_time  then 'Needs attention'
-         when upper(a.current_status)='IN_ANALYSIS' and a.open_time > b.allowed_time  then 'Needs attention'
-         when upper(a.current_status)='READY_FOR_TESTING' and a.open_time > b.allowed_time  then 'Needs attention'  
-        else 'Within limit' end as verdict     
-        from 
-        TICKET_STATUS_TIME a
-                join sla b on a.current_status =b.status 
-                join spoc c on a.module=c.module and a.label=c.label
-    """)
-
-    df = con.execute("""
-        SELECT * FROM TEMP_TICKET_STATUS_FINAL
-        """).df()
-   
-    df.to_csv("dashboard.csv", index=False)
-
-    df1 = con.execute("""
-         with temp as (             
-        SELECT SPOC,module,label, case when verdict = 'Needs attention' then 1 else 0 end as NEED_ATTENTION,
-                      case when verdict = 'Within limit' then 1 else 0 end as Within_limit
-                       FROM TEMP_TICKET_STATUS_FINAL)
-                      select SPOC,module,label,sum(NEED_ATTENTION) as NEED_ATTENTION ,sum(Within_limit) as Within_limit from temp
-                      group by SPOC,module,label
-        """).df()
+    # === Bulk insert with executemany (fast) ===
+    insert_query = """
+    INSERT INTO TEMP_TICKET_STATUS_TIME (ticket_no, module, status, assignee,created, label, priority)
+    VALUES (%s, %s, %s, %s,%s,%s,%s)
+    """
+    cur.executemany(insert_query, data)
+    conn.commit()
+    cur.execute(
+    """
+INSERT INTO TICKET_STATUS_TIME (
+    ticket_no, module, priority, label,
+    open_time, in_analysis_time, ready_for_testing_time,
+    reopened_count, current_status, assignee, last_updated
+)
+SELECT
+    ticket_no,
+    module,
+    priority,
+    label,
+    CASE WHEN UPPER(status) = 'OPEN' THEN 15 ELSE 0 END              ,
+    CASE WHEN UPPER(status) = 'IN ANALYSIS' THEN 15 ELSE 0 END      ,
+    CASE WHEN UPPER(status) = 'READY FOR TESTING' THEN 15 ELSE 0 END ,
+    CASE WHEN UPPER(status) = 'REOPENED' THEN 1 ELSE 0 END           ,
+    status         ,
+    assignee,
+    NOW()                             
+FROM TEMP_TICKET_STATUS_TIME a
+ON DUPLICATE KEY UPDATE
     
-    df1.to_csv("grouped.csv", index=False)
+    open_time = open_time + CASE WHEN UPPER(status) = 'OPEN' THEN 15 ELSE 0 END,
+    in_analysis_time = in_analysis_time + CASE WHEN UPPER(status) = 'IN ANALYSIS' THEN 15 ELSE 0 END,
+    ready_for_testing_time = ready_for_testing_time + CASE WHEN UPPER(status) = 'READY FOR TESTING' THEN 15 ELSE 0 END,
+
+    reopened_count = reopened_count + CASE WHEN UPPER(status) = 'REOPENED' THEN 1 ELSE 0 END,
+    
+    -- Always update these fields with new values
+    current_status = a.status,
+    priority       = a.priority,
+    label          = a.label,
+    assignee       = a.assignee,
+    last_updated   = NOW()
+
+    """
+    )
+    conn.commit()
+    
+# ==============================
+# GENERATE OUTPUTS - TiDB compliant
+# ==============================
+
+
+def load_lookup_tables(conn):
+    cur = conn.cursor()
+
+    cur.execute("DROP  TABLE IF EXISTS SPOC")
+    cur.execute("DROP  TABLE IF EXISTS SLA")
+
+    cur.execute("""
+    CREATE  TABLE SPOC (
+        module VARCHAR(255),
+        label VARCHAR(255),
+        spoc VARCHAR(255)
+    )
+    """)
+
+    cur.execute("""
+    CREATE  TABLE SLA (
+        status VARCHAR(50),
+        allowed_time INT
+    )
+    """)
+
+    pd.read_csv("SPOC.csv").pipe(
+        lambda df: cur.executemany(
+            "INSERT INTO SPOC VALUES (%s,%s,%s)", df.values.tolist()
+        )
+    )
+
+    pd.read_csv("time_limit.csv").pipe(
+        lambda df: cur.executemany(
+            "INSERT INTO SLA VALUES (%s,%s)", df.values.tolist()
+        )
+    )
+
+    conn.commit()
+
+
+
 
 
 def main():
-    con = duckdb.connect(DB_FILE)
-    try:
-        con.execute("BEGIN TRANSACTION")
 
-        init_db(con)
+    conn = get_conn()
+    cur = conn.cursor()
+    df = fetch_data()
+  
+    
+    init_db(cur)
+    merge_data(conn, df)
+    load_lookup_tables(conn)
+    #generate_outputs(conn)
 
-        df = fetch_data()
-        merge_data(con, df)
+    conn.close()
 
-        con.execute("COMMIT")
-        print("Merge successful at", datetime.now())
-      
 
-    except Exception as e:
-        con.execute("ROLLBACK")
-        print("Error:", e)
-
-    finally:
-        con.close()
-
-if __name__ == '__main__':
-    main()
+main()
