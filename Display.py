@@ -41,9 +41,9 @@ def main():
         a.*,
         s.spoc  as SPOC,
         CASE
-            WHEN a.current_status='OPEN' AND a.open_time > l.allowed_time THEN 'Needs attention'
-            WHEN a.current_status='IN_ANALYSIS' AND a.in_analysis_time > l.allowed_time THEN 'Needs attention'
-            WHEN a.current_status='READY_FOR_TESTING' AND a.ready_for_testing_time > l.allowed_time THEN 'Needs attention'
+            WHEN upper(a.current_status)='OPEN' AND a.open_time > l.allowed_time THEN 'Needs attention'
+            WHEN upper(a.current_status)='IN_ANALYSIS' AND a.in_analysis_time > l.allowed_time THEN 'Needs attention'
+            WHEN upper(a.current_status)='READY_FOR_TESTING' AND a.ready_for_testing_time > l.allowed_time THEN 'Needs attention'
             ELSE 'Within limit'
         END AS verdict
     FROM TICKET_STATUS_TIME a
