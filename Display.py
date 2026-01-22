@@ -3,11 +3,12 @@ import pandas as pd
 import re
 import altair as alt
 import pymysql
+import mysql.connector
 import os
 
 def get_conn():
 
-        connection = pymysql.connect(
+        connection = mysql.connector.connect(
         host=os.environ.get("host"),           # or "localhost"
         port=int(os.environ.get("port")),
         user=os.environ.get("user"),
