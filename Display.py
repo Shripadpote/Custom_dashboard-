@@ -2,13 +2,12 @@ import streamlit as st
 import pandas as pd
 import re
 import altair as alt
-import mysql.connector
-from mysql.connector import Error
+import pymysql
 import os
 
 def get_conn():
-    try:
-        connection = mysql.connector.connect(
+
+        connection = pymysql.connect(
         host=os.environ.get("host"),           # or "localhost"
         port=os.environ.get("port"),
         user=os.environ.get("user"),
@@ -20,14 +19,7 @@ def get_conn():
 
         if connection.is_connected():
             print("Successfully connected to MySQL")
-            print("MySQL Server version:", connection.get_server_info())
-            cursor = connection.cursor()
-            cursor.execute("SELECT VERSION()")
-            print("Database version:", cursor.fetchone()[0])
             return connection
-
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
 
     
 
@@ -82,7 +74,7 @@ def main():
     """, con)
 
 
-
+    con.close()
     # Load the data once at the start
    # df1 = pd.read_csv('dashboard.csv')
     #df = pd.read_csv('grouped.csv')
