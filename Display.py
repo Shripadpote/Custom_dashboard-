@@ -224,7 +224,7 @@ def main():
             classes="mystyle"
             )
             st.markdown(styled_html+f'<div class="scroll-container">{html_table}</div>',unsafe_allow_html=True)
-        time.sleep(15)   # waits for 15 seconds
+    time.sleep(15)   # waits for 15 seconds
 
 
 if __name__ == '__main__':
