@@ -175,13 +175,15 @@ def main():
         with col1:
             st.write("Select a SPOC to check tickets which needs attention" )
             df=df.iloc[:,1:]
-            selected = st.dataframe(
-            df,
-            hide_index=True,
-            use_container_width=True,
-            selection_mode="single-row"#,
-            #on_select="rerun"
-            )
+            selected = st.data_editor(
+    df,
+    hide_index=True,
+    use_container_width=True,
+    num_rows="dynamic",
+    key="my_editor",
+    selection_mode="single"
+                )
+
             st.write(selected)
             
             
