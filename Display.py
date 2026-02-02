@@ -1,4 +1,5 @@
 import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 import re
 import altair as alt
@@ -175,14 +176,15 @@ def main():
         with col1:
             st.write("Select a SPOC to check tickets which needs attention" )
             df=df.iloc[:,1:]
-            selected = st.data_editor(
-    df,
-    hide_index=True,
-    use_container_width=True,
-    num_rows="dynamic",
-    key="my_editor",
-    selection_mode="single"
-                )
+            gb = GridOptionsBuilder.from_dataframe(df)
+            gb.configure_selection(selection_mode="single", use_checkbox=True)
+            grid_options = gb.build()
+
+            # Display grid
+            grid_response = AgGrid(df, gridOptions=grid_options, height=200, fit_columns_on_grid_load=True)
+
+            # Get selected row
+            selected = grid_response["selected_rows"]
 
             st.write(selected)
             
