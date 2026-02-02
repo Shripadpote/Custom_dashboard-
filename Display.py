@@ -165,6 +165,7 @@ def main():
         st.write(f"<b>Details for [{st.session_state.selected_priority}] priority</b>", unsafe_allow_html=True)
         st.markdown(styled_html, unsafe_allow_html=True)
         col1,col2=st.columns(2)
+        
         with col1:
             st.write("Select a SPOC to check tickets which needs attention" )
             df=df.iloc[:,1:]
@@ -175,6 +176,8 @@ def main():
             selection_mode="single-row",
             on_select="rerun"
             )
+            if 'selected' not in st.session_state:
+                st.session_state.selected = ''
             
         with col2:
             SPOC_df=df[["SPOC","NEED_ATTENTION"]]
@@ -197,11 +200,11 @@ def main():
 
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
-
-
-        selected_value=''
-        if selected.selection.rows:
-            idx = selected.selection.rows[0]
+        
+        if st.session_state.selected != selected
+                st.session_state.selected=selected
+        if st.session_state.selected.selection.rows:
+            idx = st.session_state.selected.selection.rows[0]
             selected_value = df.iloc[idx]["SPOC"]
             st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
