@@ -177,7 +177,7 @@ def main():
             on_select="rerun"
             )
             if 'selected' not in st.session_state:
-                st.session_state.selected = ''
+                st.session_state.selected = df.rows[0]
             
         with col2:
             SPOC_df=df[["SPOC","NEED_ATTENTION"]]
