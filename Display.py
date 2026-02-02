@@ -77,8 +77,8 @@ def main():
 
     con.close()
     df = df.sort_values(
-    by=["NEED_ATTENTION", "Within_limit","SPOC"],
-    ascending=[False, False,True]
+    by=["NEED_ATTENTION","SPOC"],
+    ascending=[False,True]
         )
     # Load the data once at the start
    # df1 = pd.read_csv('dashboard.csv')
