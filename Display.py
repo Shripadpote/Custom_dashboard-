@@ -182,7 +182,7 @@ def main():
             selection_mode="single-row",
             on_select="rerun"
             )
-            st.write(selected)
+           # st.write(selected)
             
             
         with col2:
@@ -208,7 +208,7 @@ def main():
             st.altair_chart(chart, use_container_width=True)
         
         if selected and selected.selection and selected.selection.rows:
-                        st.write(selected)
+                        #st.write(selected)
                         row_pos = selected.selection.rows[0]
                         new_selected = df.iloc[row_pos]
 
