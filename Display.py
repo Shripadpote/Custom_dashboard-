@@ -108,7 +108,7 @@ def main():
     if 'selected_priority' not in st.session_state:
         st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
     if 'selected' not in st.session_state:
-                st.session_state.selected = df.iloc[0,1]
+                st.session_state.selected = df.iloc[0]
 
     # Priority selection
     unique_priority = sorted(df1['priority'].unique().tolist())
@@ -209,14 +209,13 @@ def main():
         if selected and selected.selection and selected.selection.rows:
                 row_pos = selected.selection.rows[0]
                 new_selected = df.iloc[row_pos]
-                new_SPOC=new_selected["SPOC"]
 
             # Only update if actually different
-                if not new_SPOC.equals(st.session_state.selected):
-                        st.session_state.selected = new_SPOC
+                if not new_selected.equals(st.session_state.selected):
+                        st.session_state.selected = new_selected
         
-        selected_value = st.session_state.selected
-        if 1==1:
+        selected_value = st.session_state.selected["SPOC"]
+        if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
                 st.write('')
