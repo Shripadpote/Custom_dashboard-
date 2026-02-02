@@ -104,7 +104,7 @@ def main():
     if 'selected_priority' not in st.session_state:
         st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
     if 'selected' not in st.session_state:
-                st.session_state.selected = df.iloc[0]
+                st.session_state.selected = ''
 
     # Priority selection
     unique_priority = sorted(df1['priority'].unique().tolist())
@@ -175,7 +175,8 @@ def main():
             df,
             hide_index=True,
             use_container_width=True,
-            selection_mode="single-row"
+            selection_mode="single-row",
+            on_select="rerun"
             )
             
             
