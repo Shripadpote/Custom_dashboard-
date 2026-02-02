@@ -215,7 +215,7 @@ def main():
                         st.session_state.selected = new_selected
         
         selected_value = st.session_state.selected["SPOC"]
-        st.dataframe(selected_value)
+        st.write(selected_value)
         if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
