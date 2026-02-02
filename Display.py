@@ -223,7 +223,7 @@ def main():
            lambda x : f'<a href="https://shripadpote95.atlassian.net/browse/{x}" target="_blank">{x}</a>'
             )
       
-            html_table= formatted_df1.to_html(
+                html_table= formatted_df1.to_html(
             index=False,
             justify="center",
             border=0,
