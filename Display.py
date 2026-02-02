@@ -201,7 +201,7 @@ def main():
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
         
-        if st.session_state.selected != selected
+        if st.session_state.selected != selected:
                 st.session_state.selected=selected
         if st.session_state.selected.selection.rows:
             idx = st.session_state.selected.selection.rows[0]
