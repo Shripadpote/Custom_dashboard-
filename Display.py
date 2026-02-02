@@ -214,7 +214,8 @@ def main():
                 if not new_selected.equals(st.session_state.selected):
                         st.session_state.selected = new_selected
         
-                selected_value = st.session_state.selected.iloc[0]
+        selected_value = st.session_state.selected.iloc[0]
+        if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
                 st.write('')
