@@ -203,7 +203,7 @@ def main():
         
         if selected and selected.selection and selected.selection.rows:
                 row_pos = selected.selection.rows[0]
-                new_selected = df.iloc[row_pos]
+        new_selected = df.iloc[row_pos]
 
             # Only update if actually different
         if not new_selected.equals(st.session_state.selected):
