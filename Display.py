@@ -223,7 +223,7 @@ def main():
         
         selected_value = st.session_state.selected
         
-        if selected_value:
+        if 1==1:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
                 st.write('')
