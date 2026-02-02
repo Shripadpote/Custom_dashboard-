@@ -215,8 +215,8 @@ def main():
                         new_selected = df.iloc[row_pos]
 
             # Only update if actually different
-                if not new_selected.equals(st.session_state.selected):
-                        st.session_state.selected = new_selected
+                        if not new_selected.equals(st.session_state.selected):
+                                st.session_state.selected = new_selected
         
         selected_value = st.session_state.selected["SPOC"]
         
