@@ -108,7 +108,7 @@ def main():
     if 'selected_priority' not in st.session_state:
         st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
     if 'selected' not in st.session_state:
-                st.session_state.selected = df.iloc[0]
+                st.session_state.selected = df.iloc[0,1]
 
     # Priority selection
     unique_priority = sorted(df1['priority'].unique().tolist())
@@ -179,8 +179,8 @@ def main():
             df,
             hide_index=True,
             use_container_width=True,
-            selection_mode="single-row",
-            on_select="ignore"
+            selection_mode="single-cell",
+            on_select="rerun"
             )
             st.write(selected)
             
@@ -207,14 +207,19 @@ def main():
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
         
-        if selected and selected.selection and selected.selection.rows:
-                        st.write(selected)
-                        row_pos = selected.selection.rows[0]
-                        new_selected = df.iloc[row_pos]
+        if selected and selected.selection :
+                rows = selected.selection.rows          # list of row indices (usually length 1)
+                cols = selected.selection.columns       # list of column indices (usually length 1)
+    
+                if rows and cols:
+                        row_idx = rows[0]
+                        col_idx = cols[0]
+        
+                        selected_value = df.iat[row_idx, col_idx]
 
             # Only update if actually different
-                        if not new_selected.equals(st.session_state.selected):
-                                st.session_state.selected = new_selected
+                        if not selected_value.equals(st.session_state.selected):
+                                st.session_state.selected = selected_value
         
         selected_value = st.session_state.selected["SPOC"]
         
