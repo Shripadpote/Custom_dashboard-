@@ -206,7 +206,7 @@ def main():
 
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
-        
+        selected_value=''
         if selected and selected.selection :
                 rows = selected.selection.rows          # list of row indices (usually length 1)
                 cols = selected.selection.columns       # list of column indices (usually length 1)
@@ -221,7 +221,7 @@ def main():
                         if not selected_value.equals(st.session_state.selected):
                                 st.session_state.selected = selected_value
         
-        selected_value = st.session_state.selected["SPOC"]
+        selected_value = st.session_state.selected
         
         if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
