@@ -207,9 +207,7 @@ def main():
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
         
-        if selected is not None:                     # important: can be None initially
-            if "selection" in selected:               # make sure key exists
-                if selected.selection.rows:
+        if selected and selected.selection and selected.selection.rows:
                         st.write(selected)
                         row_pos = selected.selection.rows[0]
                         new_selected = df.iloc[row_pos]
