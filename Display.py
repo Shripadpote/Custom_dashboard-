@@ -76,7 +76,7 @@ def main():
 
 
     con.close()
-    df=df.sort_values(by='NEED_ATTENTION')
+    df=df.sort_values(by='NEED_ATTENTION',ascending=False)
     # Load the data once at the start
    # df1 = pd.read_csv('dashboard.csv')
     #df = pd.read_csv('grouped.csv')
