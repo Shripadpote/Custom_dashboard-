@@ -108,7 +108,7 @@ def main():
     if 'selected_priority' not in st.session_state:
         st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
     if 'selected' not in st.session_state:
-                st.session_state.selected = df.iloc[0,1]
+                st.session_state.selected = df.iloc[0]
 
     # Priority selection
     unique_priority = sorted(df1['priority'].unique().tolist())
@@ -179,7 +179,7 @@ def main():
             df,
             hide_index=True,
             use_container_width=True,
-            selection_mode="single-cell",
+            selection_mode="single-row",
             on_select="rerun"
             )
             st.write(selected)
@@ -206,24 +206,19 @@ def main():
 
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
-        selected_value=''
-        if selected and selected.selection :
-                rows = selected.selection.rows          # list of row indices (usually length 1)
-                cols = selected.selection.columns       # list of column indices (usually length 1)
-    
-                if rows and cols:
-                        row_idx = rows[0]
-                        col_idx = cols[0]
         
-                        new_value = df.iloc[row_idx, col_idx]
+        if selected and selected.selection and selected.selection.rows:
+                        st.write(selected)
+                        row_pos = selected.selection.rows[0]
+                        new_selected = df.iloc[row_pos]
 
             # Only update if actually different
-                        if not selected_value.equals(st.session_state.selected):
-                                st.session_state.selected = new_value
+                        if not new_selected.equals(st.session_state.selected):
+                                st.session_state.selected = new_selected
         
-        selected_value = st.session_state.selected
+        selected_value = st.session_state.selected["SPOC"]
         
-        if 1==1:
+        if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
                 st.write('')
@@ -232,7 +227,6 @@ def main():
                 formatted_df1=formatted_df1[formatted_df1["SPOC"] == selected_value]
                 formatted_df1=formatted_df1[formatted_df1["verdict"] == 'Needs attention']
     
-        #filtered_df = df[df["DOMAIN"] == "Billing"]
                 formatted_df1["ticket_no"]=formatted_df1["ticket_no"].apply(
            lambda x : f'<a href="https://shripadpote95.atlassian.net/browse/{x}" target="_blank">{x}</a>'
             )
