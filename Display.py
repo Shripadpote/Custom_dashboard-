@@ -202,14 +202,14 @@ def main():
             st.altair_chart(chart, use_container_width=True)
         
         if selected and selected.selection and selected.selection.rows:
-                row_pos = selected.selection.rows[1]
+                row_pos = selected.selection.rows[0]
                 new_selected = df.iloc[row_pos]
 
             # Only update if actually different
                 if not new_selected.equals(st.session_state.selected):
                         st.session_state.selected = new_selected
-        if st.session_state.selected:
-            selected_value = selected
+        
+            selected_value = st.session_state.selected.iloc[0]
             st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
             st.write('')
