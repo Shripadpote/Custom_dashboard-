@@ -209,17 +209,17 @@ def main():
                 if not new_selected.equals(st.session_state.selected):
                         st.session_state.selected = new_selected
         
-            selected_value = st.session_state.selected.iloc[0]
-            st.write("Tickets for SPOC which needs attention: ", selected_value)
+                selected_value = st.session_state.selected.iloc[0]
+                st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
-            st.write('')
+                st.write('')
             
-            formatted_df1 = filtered_df1.copy()
-            formatted_df1=formatted_df1[formatted_df1["SPOC"] == selected_value]
-            formatted_df1=formatted_df1[formatted_df1["verdict"] == 'Needs attention']
+                formatted_df1 = filtered_df1.copy()
+                formatted_df1=formatted_df1[formatted_df1["SPOC"] == selected_value]
+                formatted_df1=formatted_df1[formatted_df1["verdict"] == 'Needs attention']
     
         #filtered_df = df[df["DOMAIN"] == "Billing"]
-            formatted_df1["ticket_no"]=formatted_df1["ticket_no"].apply(
+                formatted_df1["ticket_no"]=formatted_df1["ticket_no"].apply(
            lambda x : f'<a href="https://shripadpote95.atlassian.net/browse/{x}" target="_blank">{x}</a>'
             )
       
@@ -230,7 +230,7 @@ def main():
             escape=False,
             classes="mystyle"
             )
-            st.markdown(styled_html+f'<div class="scroll-container">{html_table}</div>',unsafe_allow_html=True)
+                st.markdown(styled_html+f'<div class="scroll-container">{html_table}</div>',unsafe_allow_html=True)
 
 
 
