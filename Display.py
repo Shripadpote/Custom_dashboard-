@@ -215,11 +215,11 @@ def main():
                         row_idx = rows[0]
                         col_idx = cols[0]
         
-                        selected_value = df.iat[row_idx, col_idx]
+                        new_value = df.iloc[row_idx, col_idx]
 
             # Only update if actually different
                         if not selected_value.equals(st.session_state.selected):
-                                st.session_state.selected = selected_value
+                                st.session_state.selected = new_value
         
         selected_value = st.session_state.selected
         
