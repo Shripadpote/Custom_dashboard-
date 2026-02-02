@@ -103,6 +103,8 @@ def main():
     # Initialize session state for priority if not already set
     if 'selected_priority' not in st.session_state:
         st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
+    if 'selected' not in st.session_state:
+                st.session_state.selected = df.iloc[0,1]
 
     # Priority selection
     unique_priority = sorted(df1['priority'].unique().tolist())
@@ -176,8 +178,7 @@ def main():
             selection_mode="single-row",
             on_select="rerun"
             )
-            if 'selected' not in st.session_state:
-                st.session_state.selected = df.iloc[0]
+            
             
         with col2:
             SPOC_df=df[["SPOC","NEED_ATTENTION"]]
