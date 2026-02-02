@@ -176,7 +176,6 @@ def main():
             hide_index=True,
             use_container_width=True,
             selection_mode="single-row"
-            #,on_select="rerun"
             )
             
             
