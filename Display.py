@@ -207,6 +207,7 @@ def main():
             st.altair_chart(chart, use_container_width=True)
         
         if selected and selected.selection and selected.selection.rows:
+                st.write(selected)
                 row_pos = selected.selection.rows[0]
                 new_selected = df.iloc[row_pos]
 
@@ -215,7 +216,7 @@ def main():
                         st.session_state.selected = new_selected
         
         selected_value = st.session_state.selected["SPOC"]
-        st.write(selected_value)
+        
         if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
         #st.dataframe(df,hide_index=True)
