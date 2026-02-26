@@ -13,11 +13,6 @@ API_TOKEN=os.environ.get("API")
 auth = HTTPBasicAuth(EMAIL, API_TOKEN)
 url = f"{JIRA_BASE_URL}/rest/api/3/search/jql"
 jql = 'project = dashboard and parent = DEV-4'
-host=os.environ.get("HOST")           # or "localhost"
-port=4000
-user=os.environ.get("USER")
-password=os.environ.get("PASSWORD")
-print(host,port,user,password)
 
 def get_conn():
     try:
@@ -33,10 +28,6 @@ def get_conn():
 
         if connection.is_connected():
             print("Successfully connected to MySQL")
-         
-            cursor = connection.cursor()
-            cursor.execute("SELECT VERSION()")
-
             return connection
 
     except Error as e:
