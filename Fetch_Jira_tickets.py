@@ -22,7 +22,7 @@ def get_conn():
         user=os.environ["DB_USER"],
         password=os.environ["PASSWORD"],
         database="test",   # optional – can connect without DB first
-        connect_timeout=10,
+        connect_timeout=100,
        
     )
 
