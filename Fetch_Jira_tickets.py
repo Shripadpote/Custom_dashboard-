@@ -19,7 +19,7 @@ def get_conn():
         connection = mysql.connector.connect(
         host=os.environ.get("HOST"),           # or "localhost"
         port=4000,
-        user=os.environ.get("USER"),
+        user=os.environ.get("DB_USER"),
         password=os.environ.get("PASSWORD"),
         database="test",   # optional – can connect without DB first
         connect_timeout=10,
