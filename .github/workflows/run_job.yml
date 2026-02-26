@@ -34,4 +34,7 @@ jobs:
         env:
           API: ${{ secrets.API }}
           EMAIL: ${{ secrets.EMAIL }}
+          HOST: ${{ secrets.HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          PASSWORD: ${{ secrets.PASSWORD }}
          
