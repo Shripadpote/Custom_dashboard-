@@ -17,10 +17,10 @@ jql = 'project = dashboard and parent = DEV-4'
 def get_conn():
     try:
         connection = mysql.connector.connect(
-        host=os.environ.get("HOST"),           # or "localhost"
+        host=os.environ["HOST"],           # or "localhost"
         port=4000,
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("PASSWORD"),
+        user=os.environ["DB_USER"],
+        password=os.environ["PASSWORD"],
         database="test",   # optional – can connect without DB first
         connect_timeout=10,
        
