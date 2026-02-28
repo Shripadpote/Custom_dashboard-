@@ -201,7 +201,7 @@ def main():
                         row_pos = selected.selection.rows[0]
                         new_selected = df.iloc[row_pos]
         
-        selected_value = selected["SPOC"]
+        selected_value = new_selected["SPOC"]
         
         if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
