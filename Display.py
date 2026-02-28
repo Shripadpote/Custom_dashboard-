@@ -195,7 +195,7 @@ def main():
 
             chart = bars + text_inside
             st.altair_chart(chart, use_container_width=True)
-        
+        selected_value=''
         if selected and selected.selection and selected.selection.rows:
                         #st.write(selected)
                         row_pos = selected.selection.rows[0]
