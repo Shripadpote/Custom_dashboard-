@@ -157,7 +157,7 @@ def main():
 </style>
 """
 
-        st.write(f"<b>Details for [{st.session_state.selected_priority}] priority</b>", unsafe_allow_html=True)
+        st.write(f"<b>Details for [{selected_priority}] priority</b>", unsafe_allow_html=True)
         st.markdown(styled_html, unsafe_allow_html=True)
         col1,col2=st.columns(2)
         
