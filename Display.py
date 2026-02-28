@@ -103,12 +103,12 @@ def main():
     #st.image(logo1, use_column_width=True)
 
     st.subheader('Time in status')
-
+'''
     # Initialize session state for priority if not already set
     if 'selected_priority' not in st.session_state:
         st.session_state.selected_priority = df1['priority'].unique().tolist()[0]
     if 'selected' not in st.session_state:
-                st.session_state.selected = df.iloc[0]
+                st.session_state.selected = df.iloc[0] '''
 
     # Priority selection
     unique_priority = sorted(df1['priority'].unique().tolist())
@@ -118,15 +118,15 @@ def main():
         index=False,
         horizontal=True
     )
-
+'''
     # Update session state if the selection changes
     if selected_priority != st.session_state.selected_priority:
-        st.session_state.selected_priority = selected_priority
+        st.session_state.selected_priority = selected_priority '''
 
     # Filter data based on the selected priority
-    #filtered_df = df[df['priority'] == st.session_state.selected_priority]
-    filtered_df1 = df1[df1['priority'] == st.session_state.selected_priority]
-    df= df[df['priority'] == st.session_state.selected_priority]
+    #filtered_df = df[df['priority'] == selected_priority]
+    filtered_df1 = df1[df1['priority'] == selected_priority]
+    df= df[df['priority'] == selected_priority]
     with st.spinner('Loading data...'):
         styled_html = f"""
 <style>
@@ -211,12 +211,12 @@ def main():
                         #st.write(selected)
                         row_pos = selected.selection.rows[0]
                         new_selected = df.iloc[row_pos]
-
+'''
             # Only update if actually different
                         if not new_selected.equals(st.session_state.selected):
-                                st.session_state.selected = new_selected
+                                st.session_state.selected = new_selected '''
         
-        selected_value = st.session_state.selected["SPOC"]
+        selected_value = selected["SPOC"]
         
         if selected_value:
                 st.write("Tickets for SPOC which needs attention: ", selected_value)
